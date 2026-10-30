@@ -73,4 +73,36 @@ class ProdutoTest extends TestCase
             ->assertUnprocessable()
             ->assertJsonValidationErrors('preco_max');
     }
+
+    public function test_atualiza_produto_com_sucesso(): void
+    {
+        $produto = Produto::create(['nome' => 'Lajota', 'preco_custo' => 100, 'preco' => 110]);
+
+        $this->putJson("/api/produtos/{$produto->id}", ['nome' => 'Tijolo'])
+            ->assertOk()
+            ->assertJsonPath('data.nome', 'Tijolo');
+
+        $this->assertDatabaseHas('produtos', ['id' => $produto->id, 'nome' => 'Tijolo']);
+    }
+
+    public function test_rejeita_atualizacao_com_margem_menor_que_10_por_cento(): void
+    {
+        $produto = Produto::create(['nome' => 'Lajota', 'preco_custo' => 100, 'preco' => 110]);
+
+        $this->putJson("/api/produtos/{$produto->id}", ['preco' => 105])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('preco');
+
+        $this->assertDatabaseHas('produtos', ['id' => $produto->id, 'preco' => 110]);
+    }
+
+    public function test_remove_produto_com_sucesso(): void
+    {
+        $produto = Produto::create(['nome' => 'Lajota', 'preco_custo' => 100, 'preco' => 110]);
+
+        $this->deleteJson("/api/produtos/{$produto->id}")
+            ->assertNoContent();
+
+        $this->assertDatabaseMissing('produtos', ['id' => $produto->id]);
+    }
 }

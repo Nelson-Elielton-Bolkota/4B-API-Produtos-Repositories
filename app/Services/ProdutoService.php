@@ -22,6 +22,22 @@ class ProdutoService
         return $this->produtos->search($filtros);
     }
 
+    public function update(Produto $produto, array $dados)
+    {
+        // Usa os valores atuais do produto quando o campo não for enviado
+        $preco = $dados['preco'] ?? $produto->preco;
+        $custo = $dados['preco_custo'] ?? $produto->preco_custo;
+
+        $this->verificarMargem($preco, $custo);
+
+        return $this->produtos->update($produto, $dados);
+    }
+
+    public function delete(Produto $produto): void
+    {
+        $this->produtos->delete($produto);
+    }
+
     private function verificarMargem(float $preco, float $custo)
     {
         $valor = $custo + (0.1 * $custo);

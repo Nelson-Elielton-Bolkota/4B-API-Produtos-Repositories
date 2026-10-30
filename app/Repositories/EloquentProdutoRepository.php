@@ -30,7 +30,14 @@ class EloquentProdutoRepository implements ProdutoRepositoryInterface
         return Produto::query()
                 ->when($filtros['search'] ?? null, 
                 fn ($query, $pedaco) => 
-                $query->where('nome', 'LIKE', "%{$pedaco}%"))->paginate($porPagina);
+                $query->where('nome', 'LIKE', "%{$pedaco}%"))
+                ->when(isset($filtros['preco_min']),
+                fn ($query) =>
+                $query->where('preco', '>=', $filtros['preco_min']))
+                ->when(isset($filtros['preco_max']),
+                fn ($query) =>
+                $query->where('preco', '<=', $filtros['preco_max']))
+                ->paginate($porPagina);
     }
 
 }
